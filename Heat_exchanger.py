@@ -20,7 +20,7 @@ class Heat_ex():
 		self.DH_in = self.ID_in
 		self.DH_out = self.ID_out
 		
-		self.k_t = 17														#thermal conductivity of tube
+		self.k_t = 20														#thermal conductivity of tube
 		self.Cold_v = self.Cold_feed_rate/((np.pi/4)*(self.ID_out**2-self.OD_in**2))		#m/s
 		self.Hot_v = self.Hot_feed_rate/((np.pi*self.ID_in**2)/4)		#m/s
 		
