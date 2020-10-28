@@ -20,7 +20,7 @@ class Heat_ex():
 		self.DH_in = self.ID_in
 		self.DH_out = self.ID_out
 		
-		self.k_t = 20														#thermal conductivity of tube
+		self.k_t = 17														#thermal conductivity of tube
 		self.Cold_v = self.Cold_feed_rate/((np.pi/4)*(self.ID_out**2-self.OD_in**2))		#m/s
 		self.Hot_v = self.Hot_feed_rate/((np.pi*self.ID_in**2)/4)		#m/s
 		
@@ -68,8 +68,8 @@ class Heat_ex():
 		A_i = np.pi*self.ID_in*dx
 		A_o = np.pi*self.ID_out*dx
 		
-		r_o = self.ID_out
-		r_i = self.ID_in
+		r_o = self.ID_out/2
+		r_i = self.ID_in/2
 		k_t = self.k_t
 		l = dx
 		
@@ -78,6 +78,8 @@ class Heat_ex():
 		T_out = np.zeros_like(x_array)
 		T_in[0] = self.T_hot_in
 		T_out[0] = self.T_cold_in
+		
+		q_tot=0
 		
 		for i in range(len(x_array)-1):
 			#Cp J/(kg*K)
@@ -93,6 +95,7 @@ class Heat_ex():
 			UA = 1/(1/(h_i*A_i)+1/(h_o*A_o)+sp.log(r_o/r_i)/(2*np.pi*k_t*l))
 			
 			q = UA*(T_in[i]-T_out[i])
+			q_tot += q
 			delT_in = q/(self.Cp_w.subs(T, T_in[i])*m_h)
 			delT_out = q/(self.Cp_w.subs(T, T_out[i])*m_c)
 			T_in[i+1] = T_in[i] - delT_in
@@ -110,6 +113,7 @@ class Heat_ex():
 		
 		print('Hot_end = {}'.format(T_in[-1]-273))
 		print('Cool_end = {}'.format(T_out[-1]-273))
+		print('q = {}'.format(q_tot))
 
 if __name__ == '__main__':
 
