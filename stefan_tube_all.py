@@ -389,6 +389,13 @@ class calc_data():
 		plt.grid()
 		plt.show()
 		
+		print('Exp : {}%'.format(y_list[0]))
+		print('Chapman : {}%'.format(y_list[1]))
+		print('Brokaw : {}%'.format(y_list[2]))
+		print('Chen : {}%'.format(y_list[3]))
+		print('Fuller : {}%'.format(y_list[4]))
+		
+		
 if __name__ == '__main__':
 	
 	#1
