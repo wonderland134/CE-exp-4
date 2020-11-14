@@ -45,6 +45,9 @@ class calc_data():
 		
 		self.Acetone_dens = 57.6214/(0.233955**(1+(1-self.T/507.803)**0.254167))/1000 #g/cm^3
 		#reference by (4)
+		
+		self.Acetone_dipole = 2.88
+		#reference by (9)
 		############Substance properties############
 		
 		#############Result############
@@ -55,7 +58,8 @@ class calc_data():
 		self.D_chen = None
 		self.D_fuller = None
 		self.D_reff = None
-		self.delta_h = None
+		self.delta_h_1 = None
+		self.delta_h_2 = None
 		#############Result############
 	
 	def liquid_density(self):
@@ -92,7 +96,7 @@ class calc_data():
 				result = (C_data[i]-C_data[i-1])/(DT_data[i]-DT_data[i-1])*(Dimensionless_T-DT_data[i])+C_data[i]
 				return result
 	
-	def poly_regression(self, x, y, n, title, Figure = True):
+	def poly_regression(self, x, y, n, title = '', Figure = True):
 		plt.close()
 		plt.plot(x, y, 'bo', label = 'Data')
 		
@@ -209,12 +213,21 @@ class calc_data():
 		M_B = self.M_air
 		P = self.P_av
 		T = self.T
+		mu_A = self.Acetone_dipole
+		
+		#Calculate delta value
+		def func_delta(Vb, Tb, mu):
+			return 1.94*10**3*mu**2/(Vb*Tb)
+			
+		delta_acetone = func_delta(Vb_A, Tb_A, mu_A)
+		delta_air = 0
 		
 		#Calculate epsilon value
 		def func_epsilon(delta, Tb):
 			return 1.18*(1+1.3*delta**2)*Tb
-		epsilon_acetone = func_epsilon(delta, Tb_A)
-		epsilon_air = func_epsilon(delta, Tb_B)
+		
+		epsilon_acetone = func_epsilon(delta_acetone, Tb_A)
+		epsilon_air = func_epsilon(delta_air, Tb_B)
 		epsilon = (epsilon_air * epsilon_acetone)**0.5
 		
 		D_T = T/epsilon			#dimensionless temperature
@@ -273,8 +286,8 @@ class calc_data():
 		
 		self.D_fuller = np.round_(D, 4)
 		
-	def find_h(self):
-		#del_h is positive value -> actual length is shorter than measured
+	def find_h_1(self):
+		#del_h is positive value -> actual length is larger than measured
 		del_h_start = -3					#in cm
 		del_h_end = 3
 		del_h_del = 0.1
@@ -294,25 +307,48 @@ class calc_data():
 		D_array = np.array([])
 		for i in range(len(del_h)):
 			x_data = self.t_data
-			y_data = (h_data - del_h[i])**2 - (h_data[0] - del_h[i])**2
-			slope = self.poly_regression(x_data, y_data, 1, 't vs hf^2 - hi^2', Figure = False)[0]
+			y_data = (h_data + del_h[i])**2 - (h_data[0] + del_h[i])**2
+			slope = self.poly_regression(x_data, y_data, 1, Figure = False)[0]
 			temp = slope*rho*R*T*Plm/(2*M_A*P*P_1)
 			
 			if i>1:
 				det = (self.D_reff-temp)*(self.D_reff-D_array[-1])
 				if det<0:
-					self.delta_h = np.round_(del_h[i],3)
+					self.delta_h_1 = np.round_(del_h[i],3)
 			
 			D_array = np.hstack([D_array, np.array([temp])])
 			
 			
 		plt.close()
 		plt.plot(del_h, D_array)
+		plt.plot([del_h_start, del_h_end], [self.D_reff, self.D_reff])
 		plt.xlabel('Variation of h')
 		plt.ylabel('Diffusivity in cm^2/s')
 		plt.title('Diffusivity change If h-variation exist')
 		plt.grid()
 		plt.show()
+		
+	def find_h_2(self):
+		del_h_start = -3					#in cm
+		del_h_end = 3
+		del_h_del = 0.1
+		del_h = np.arange(del_h_start, del_h_end + del_h_del, del_h_del)
+		h_data = self.h_data
+		
+		x_data = self.t_data
+		intercept_data = np.zeros_like(del_h)
+		for i in range(len(del_h)):
+			y_data = (h_data + del_h[i])**2 - (h_data[0] + del_h[i])**2
+			intercept_data[i] = self.poly_regression(x_data, y_data, 1, Figure = False)[1]
+		
+		plt.close()
+		plt.plot(del_h, intercept_data)
+		plt.xlabel('Variation of h')
+		plt.ylabel('y-intercept of regression data')
+		plt.title('intercept change If h-variation exist')
+		plt.grid()
+		plt.show()
+
 				
 	def calc_all(self):
 		self.refference_D()
@@ -362,7 +398,8 @@ if __name__ == '__main__':
 	P_data = np.array([121, 126, 127, 128, 128, 129, 129, 130, 130, 128, 130, 129, 128])*9.678411*10**(-5)	#atm
 	team_1st = calc_data(t_data, h_data, 46+273.15, 1-P_data)
 	team_1st.calc_all()
-	team_1st.find_h()
+	team_1st.find_h_1()
+	team_1st.find_h_2()
 	
 	#2
 	print('2nd team')
@@ -371,7 +408,8 @@ if __name__ == '__main__':
 	P_data = np.array([121, 126, 127, 128, 128, 129, 129, 130, 130, 128, 130, 129, 128])*9.678411*10**(-5)	#atm
 	team_2nd = calc_data(t_data, h_data, 45+273.15, 1-P_data)
 	team_2nd.calc_all()
-	team_2nd.find_h()
+	team_2nd.find_h_1()
+	team_2nd.find_h_2()
 	
 	#3
 	print('3rd team')
@@ -381,7 +419,8 @@ if __name__ == '__main__':
 	T_data = np.array([45, 44.5, 44.6, 44.5, 44.2, 44.2, 45, 44.7, 44.5])+273.15
 	team_3rd = calc_data(t_data, h_data, np.average(T_data), 1-P_data)
 	team_3rd.calc_all()
-	team_3rd.find_h()
+	team_3rd.find_h_1()
+	team_3rd.find_h_2()
 	
 	#4
 	print('4th team')
@@ -391,7 +430,8 @@ if __name__ == '__main__':
 	T_data = np.array([45, 45, 45, 45, 45, 45, 44.5, 44.5])+273.15
 	team_4th = calc_data(t_data, h_data, np.average(T_data), 1-P_data)
 	team_4th.calc_all()
-	team_4th.find_h()
+	team_4th.find_h_1()
+	team_4th.find_h_2()
 	
 	#5
 	print('5th team')
@@ -401,7 +441,8 @@ if __name__ == '__main__':
 	T_data = np.array([46, 46, 46, 45.5, 45.1, 45, 45])+273.15
 	team_5th = calc_data(t_data, h_data, np.average(T_data), 1-P_data)
 	team_5th.calc_all()
-	team_5th.find_h()
+	team_5th.find_h_1()
+	team_5th.find_h_2()
 	
 	#overal result
 	print('')
@@ -415,12 +456,19 @@ if __name__ == '__main__':
 	print('5th team : {}cm^2/s, T = {}K, P = {}atm'.format(team_5th.D_exp, team_5th.T, team_5th.P_av))
 	
 	print('')
-	print('h deviation for each teams, delta_h is positive value -> actual length is shorter than measured')
-	print('1st team : {}cm'.format(team_1st.delta_h))
-	print('2nd team : {}cm'.format(team_2nd.delta_h))
-	print('3rd team : {}cm'.format(team_3rd.delta_h))
-	print('4th team : {}cm'.format(team_4th.delta_h))
-	print('5th team : {}cm'.format(team_5th.delta_h))
+	print('h deviation for each teams, delta_h is positive value -> actual length is larger than measured')
+	print('Type one, by reference diffusivity')
+	print('1st team : {}cm'.format(team_1st.delta_h_1))
+	print('2nd team : {}cm'.format(team_2nd.delta_h_1))
+	print('3rd team : {}cm'.format(team_3rd.delta_h_1))
+	print('4th team : {}cm'.format(team_4th.delta_h_1))
+	print('5th team : {}cm'.format(team_5th.delta_h_1))
+	print('Type two, by regression intercept')
+	print('1st team : {}cm'.format(team_1st.delta_h_2))
+	print('2nd team : {}cm'.format(team_2nd.delta_h_2))
+	print('3rd team : {}cm'.format(team_3rd.delta_h_2))
+	print('4th team : {}cm'.format(team_4th.delta_h_2))
+	print('5th team : {}cm'.format(team_5th.delta_h_2))
 	
 	print('')
 	print('-------------------------------------')
@@ -473,4 +521,5 @@ reference
 (6). Perry’s chemical engineers’ handbook seventh edition, 374p, table2-371 Diffusivities of pairs of gases and vapors (1atm)
 (7). Fundamentals of momentum, heat and mass transfer fifth edition, 410p, Table 24.3
 (8). Fundamentals of momentum, heat and mass transfer fifth edition, 416p, Table 24.4
+(9). https://www.sigmaaldrich.com/chemistry/solvents/acetone-center.html
 '''
