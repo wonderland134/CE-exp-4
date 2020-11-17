@@ -139,7 +139,7 @@ class calc_data():
 		P_2 = 0
 		P = self.P_av
 		R = 82.06				# cm^3 atm / (mol K)
-		rho = self.Acetone_dens
+		rho = self.Acetone_dens		#g/cm^3
 		T = self.T
 		M_A = self.M_acetone
 
