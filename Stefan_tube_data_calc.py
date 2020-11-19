@@ -405,7 +405,8 @@ class calc_data():
 		rho = 57.6214/(0.233955**(1+(1-T/507.803)**0.254167))/1000
 
 		x0 = -self.h_data[0] 			#cm
-		D = self.D_exp 						#cm^2/s
+		D = 0.1445
+		#D = self.D_exp 						#cm^2/s
 		P_s = self.P_set					#B.C where x = 0
 		P_e = 0										#B.C where x = L
 		P = self.P_av
@@ -484,102 +485,6 @@ class calc_data():
 		plt.title('t vs diffusioon length')
 		plt.show()
 		
-	def Unstst_D(self):
-		R=82.06
-		MA = self.M_acetone
-		T = self.T
-		rho = 57.6214/(0.233955**(1+(1-T/507.803)**0.254167))/1000
-
-		x0 = -self.h_data[0] 			#cm
-		D_start = self.D_exp - 0.02
-		D_end = self.D_exp + 0.02
-		D_array = np.linspace(D_start, D_end, 20) 						#cm^2/s
-		h_array = []
-		
-		P_s = self.P_set																			#B.C where x = 0
-		P_e = 0																								#B.C where x = L
-		P = self.P_av
-
-		n_x = 50
-		dx_0 = abs(x0)/n_x
-
-		t_end = self.t_data[-1]			#s
-		n_t = 2000000
-		dt = t_end/n_t		#s
-		t_array = np.linspace(0, t_end, n_t)
-
-		x1_array = np.zeros_like(t_array)
-		x1_array[0] = x0
-
-		#P_array[t][x], P_array[i][j]
-
-		#P[i+1][j]=dt/dx(dx/dt * P[i][j] + PD/(P[i][j-1]-P) * (P[i][j]-P[i][j-1])/dx -PD/(P[i][j]-P)(P[i][j+1]-P[i][j])/dx)
-		progress = int(0)
-		print(str(progress) + '% done')
-
-		P_array = [np.zeros_like(np.linspace(0, abs(x0), n_x))]
-		
-		for k in range(len(D_array)):
-			for i in range(len(t_array)):
-				dx = np.abs(x1_array[i]/n_x)			#cm
-				P_bef = P_array[i]
-				P_bef[0] = P_s
-				P_bef[-1] = P_e
-			
-				progress_temp = int(i/len(t_array)*100)
-				if progress_temp != progress:
-					progress = progress_temp
-					print('{}'.format(progress) + '% done')
-				
-				while True:
-					P_next = np.zeros_like(P_array[i])+(P_s+P_e)/2
-					P_next[0] = P_s
-					P_next[-1] = P_e
-				
-					for j in range(1, len(P_array[i])-1):
-						first = P_bef[j]
-						second = (P_bef[j+1]-2*P_bef[j]+P_bef[j-1])/(P-P_bef[j])
-						third = ((P_bef[j]-P_bef[j-1])/(P-P_bef[j]))**2
-						P_next[j] = first + dt*P*D_array[k]/dx**2*(second+third) 
-				
-					det = (P_next - P_bef)/(P_bef+(P_s+P_e)/2)
-				
-					if abs(det.max()) < 0.0001:
-						break
-					else:
-						P_bef = P_next
-				if t_array[i] != t_array[-1]:
-					x1_array[i+1] = x1_array[i]+dt*MA*P*D_array[k]/(rho*R*T*(P-P_s))*(P_bef[1]-P_s)/dx 
-				P_array.append(P_next)
-			
-			h_array.append(x1_array)
-		
-		def interpolation(target, x_array, y_array):
-			for i in range(len(x_array)-1):
-				if (target-x_array[i+1])*(target-x_array[i])<=0:
-					return (y_array[i+1]/y_array[i])*(target-x_array[i])+y_array[i]
-		
-		dev_array = []
-		for i in range(len(D_array)):
-			temp_h = []
-			for j in range(len(self.t_data)):
-				temp_h.append(interpolation(t_data[j], t_array, h_array[i]))
-			temp_h = np.array(temp_h)
-			dev_array.append((self.h_data-temp_h)**2)
-		
-		index = np.argmin(dev_array)
-		
-		print('D = {}'.format(D_array[index]))
-		
-		plt.close()
-		plt.plot(t_array, np.abs(h_array[index]))
-		plt.plot(self.t_data, self.h_data, 'ro')
-		plt.grid()
-		plt.xlabel('time(s)')
-		plt.ylabel('diffusion length(cm)')
-		plt.title('t vs diffusioon length')
-		plt.show()
-			
 		
 if __name__ == '__main__':
 	
@@ -592,9 +497,7 @@ if __name__ == '__main__':
 	team_1st.calc_all()
 	team_1st.find_h_1()
 	team_1st.find_h_2()
-	team_1st.Unstst_D()
 	
-	'''
 	#2
 	print('2nd team')
 	t_data = np.arange(0,3900,300)	#s
@@ -708,7 +611,6 @@ if __name__ == '__main__':
 	team_5th.print_result()
 	team_5th.print_error()
 	team_5th.Unstst_analysis()
-	'''
 
 	
 
