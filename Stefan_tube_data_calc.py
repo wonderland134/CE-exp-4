@@ -569,6 +569,8 @@ class calc_data():
 		
 		index = np.argmin(dev_array)
 		
+		print('D = {}'.format(D_array[index]))
+		
 		plt.close()
 		plt.plot(t_array, np.abs(h_array[index]))
 		plt.plot(self.t_data, self.h_data, 'ro')
@@ -592,6 +594,7 @@ if __name__ == '__main__':
 	team_1st.find_h_2()
 	team_1st.Unstst_D()
 	
+	'''
 	#2
 	print('2nd team')
 	t_data = np.arange(0,3900,300)	#s
@@ -705,10 +708,7 @@ if __name__ == '__main__':
 	team_5th.print_result()
 	team_5th.print_error()
 	team_5th.Unstst_analysis()
-		
-'''
-Unsteady state analysis, it take long time.
-'''
+	'''
 
 	
 
