@@ -398,15 +398,14 @@ class calc_data():
 		print('Chen : {}%'.format(y_list[3]))
 		print('Fuller : {}%'.format(y_list[4]))
 		
-	def Unstst_analysis(self):
+	def Unstst_analysis(self, D_guess):
 		R=82.06
 		MA = self.M_acetone
 		T = self.T
 		rho = 57.6214/(0.233955**(1+(1-T/507.803)**0.254167))/1000
 
 		x0 = -self.h_data[0] 			#cm
-		D = 0.1445
-		#D = self.D_exp 						#cm^2/s
+		D = D_guess 						#cm^2/s
 		P_s = self.P_set					#B.C where x = 0
 		P_e = 0										#B.C where x = L
 		P = self.P_av
@@ -485,6 +484,98 @@ class calc_data():
 		plt.title('t vs diffusioon length')
 		plt.show()
 		
+	def Unstst_D(self, D_guess):
+		
+		R=82.06
+		MA = self.M_acetone
+		T = self.T
+		rho = 57.6214/(0.233955**(1+(1-T/507.803)**0.254167))/1000
+
+		x0 = -self.h_data[0] 			#cm
+		D = D_guess 						#cm^2/s
+		P_s = self.P_set					#B.C where x = 0
+		P_e = 0										#B.C where x = L
+		P = self.P_av
+
+		n_x = 50
+		dx_0 = abs(x0)/n_x
+
+		t_end = self.t_data[-1]			#s
+		n_t = 2000000
+		dt = t_end/n_t		#s
+		t_array = np.linspace(0, t_end, n_t)
+
+		x1_array = np.zeros_like(t_array)
+		x1_array[0] = x0
+
+		#P_array[t][x], P_array[i][j]
+
+		#P[i+1][j]=dt/dx(dx/dt * P[i][j] + PD/(P[i][j-1]-P) * (P[i][j]-P[i][j-1])/dx -PD/(P[i][j]-P)(P[i][j+1]-P[i][j])/dx)
+		progress = int(0)
+		print(str(progress) + '% done')
+
+		P_array = [np.zeros_like(np.linspace(0, abs(x0), n_x))]
+
+		for i in range(len(t_array)):
+			dx = np.abs(x1_array[i]/n_x)			#cm
+			P_bef = P_array[i]
+			P_bef[0] = P_s
+			P_bef[-1] = P_e
+		
+			progress_temp = int(i/len(t_array)*100)
+			if progress_temp != progress:
+				progress = progress_temp
+				print('{}'.format(progress) + '% done')
+			
+			while True:
+				P_next = np.zeros_like(P_array[i])+(P_s+P_e)/2
+				P_next[0] = P_s
+				P_next[-1] = P_e
+			
+				for j in range(1, len(P_array[i])-1):
+					first = P_bef[j]
+					second = (P_bef[j+1]-2*P_bef[j]+P_bef[j-1])/(P-P_bef[j])
+					third = ((P_bef[j]-P_bef[j-1])/(P-P_bef[j]))**2
+					P_next[j] = first + dt*P*D/dx**2*(second+third) 
+			
+				det = (P_next - P_bef)/(P_bef+(P_s+P_e)/2)
+			
+				if abs(det.max()) < 0.0001:
+					break
+				else:
+					P_bef = P_next
+			if t_array[i] != t_array[-1]:
+				x1_array[i+1] = x1_array[i]+dt*MA*P*D/(rho*R*T*(P-P_s))*(P_bef[1]-P_s)/dx 
+			P_array.append(P_next)
+		
+		def interpolation(target, x_array, y_array):
+			for i in range(len(x_array)-1):
+				if (target-x_array[i+1])*(target-x_array[i])<=0:
+					return (y_array[i+1]/y_array[i])*(target-x_array[i])+y_array[i]
+		
+		temp_h = []
+		for i in range(len(self.t_data)):
+			temp_h.append(interpolation(t_data[i], t_array, -x1_array))
+		
+		temp_h = np.array(temp_h)
+		dev= np.sum((self.h_data-temp_h)**2)
+		
+		return dev
+	
+	def find_unstst_D(self):
+		D_array = np.linspace(self.D_ref-0.03, self.D_ref+0.03, 30)
+		dev_array = np.zeros_like(D_array)
+		
+		for i in range(len(D_array)):
+			print('{} th process / {} process'.format(i, len(D_array)))
+			dev_array[i] = self.Unstst_D(D_array[i])
+		
+		index = np.argmin(dev_array)
+		
+		self.Unstst_analysis(D_array[index])
+		print(D_array[index])
+		
+		
 		
 if __name__ == '__main__':
 	
@@ -495,9 +586,11 @@ if __name__ == '__main__':
 	P_data = np.array([121, 126, 127, 128, 128, 129, 129, 130, 130, 128, 130, 129, 128])*9.678411*10**(-5)	#atm
 	team_1st = calc_data(t_data, h_data, 46+273.15, 1-P_data)
 	team_1st.calc_all()
-	team_1st.find_h_1()
-	team_1st.find_h_2()
+	#team_1st.find_h_1()
+	#team_1st.find_h_2()
+	team_1st.find_unstst_D()
 	
+
 	#2
 	print('2nd team')
 	t_data = np.arange(0,3900,300)	#s
@@ -505,8 +598,9 @@ if __name__ == '__main__':
 	P_data = np.array([121, 126, 127, 128, 128, 129, 129, 130, 130, 128, 130, 129, 128])*9.678411*10**(-5)	#atm
 	team_2nd = calc_data(t_data, h_data, 45+273.15, 1-P_data)
 	team_2nd.calc_all()
-	team_2nd.find_h_1()
-	team_2nd.find_h_2()
+	#team_2nd.find_h_1()
+	#team_2nd.find_h_2()
+	team_2nd.find_unstst_D()
 	
 	#3
 	print('3rd team')
@@ -516,8 +610,9 @@ if __name__ == '__main__':
 	T_data = np.array([45, 44.5, 44.6, 44.5, 44.2, 44.2, 45, 44.7, 44.5])+273.15
 	team_3rd = calc_data(t_data, h_data, np.average(T_data), 1-P_data)
 	team_3rd.calc_all()
-	team_3rd.find_h_1()
-	team_3rd.find_h_2()
+	#team_3rd.find_h_1()
+	#team_3rd.find_h_2()
+	team_3rd.find_unstst_D()
 	
 	#4
 	print('4th team')
@@ -527,8 +622,9 @@ if __name__ == '__main__':
 	T_data = np.array([45, 45, 45, 45, 45, 45, 44.5, 44.5])+273.15
 	team_4th = calc_data(t_data, h_data, np.average(T_data), 1-P_data)
 	team_4th.calc_all()
-	team_4th.find_h_1()
-	team_4th.find_h_2()
+	#team_4th.find_h_1()
+	#team_4th.find_h_2()
+	team_4th.find_unstst_D()
 	
 	#5
 	print('5th team')
@@ -538,9 +634,11 @@ if __name__ == '__main__':
 	T_data = np.array([46, 46, 46, 45.5, 45.1, 45, 45])+273.15
 	team_5th = calc_data(t_data, h_data, np.average(T_data), 1-P_data)
 	team_5th.calc_all()
-	team_5th.find_h_1()
-	team_5th.find_h_2()
+	#team_5th.find_h_1()
+	#team_5th.find_h_2()
+	team_5th.find_unstst_D()
 	
+	'''
 	#overal result
 	print('')
 	print('-------------------------------------')
@@ -592,7 +690,7 @@ if __name__ == '__main__':
 	team_3rd.print_condition()
 	team_3rd.print_result()
 	team_3rd.print_error()
-	team_3rd.Unstst_analysis()
+	team_3rd.Unstst_analysis(team_3rd.D_exp)
 	
 	print('')
 	print('-------------------------------------')
@@ -611,7 +709,7 @@ if __name__ == '__main__':
 	team_5th.print_result()
 	team_5th.print_error()
 	team_5th.Unstst_analysis()
-
+	'''
 	
 
 
