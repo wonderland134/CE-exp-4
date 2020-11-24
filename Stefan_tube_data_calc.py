@@ -588,7 +588,7 @@ if __name__ == '__main__':
 	team_1st.calc_all()
 	#team_1st.find_h_1()
 	#team_1st.find_h_2()
-	#team_1st.find_unstst_D(team_1st.D_ref, 0.02, 10)
+	team_1st.find_unstst_D(team_1st.D_ref, 0.02, 10)
 	
 
 	#2
@@ -600,7 +600,7 @@ if __name__ == '__main__':
 	team_2nd.calc_all()
 	#team_2nd.find_h_1()
 	#team_2nd.find_h_2()
-	#team_2nd.find_unstst_D(team_2nd.D_ref, 0.02, 10)
+	team_2nd.find_unstst_D(team_2nd.D_ref, 0.02, 10)
 	
 	#3
 	print('3rd team')
@@ -612,7 +612,7 @@ if __name__ == '__main__':
 	team_3rd.calc_all()
 	#team_3rd.find_h_1()
 	#team_3rd.find_h_2()
-	#team_3rd.find_unstst_D(team_3rd.D_ref, 0.02, 10)
+	team_3rd.find_unstst_D(team_3rd.D_ref, 0.02, 10)
 	
 	#4
 	print('4th team')
@@ -624,7 +624,7 @@ if __name__ == '__main__':
 	team_4th.calc_all()
 	#team_4th.find_h_1()
 	#team_4th.find_h_2()
-	#team_4th.find_unstst_D(team_4th.D_ref, 0.02, 10)
+	team_4th.find_unstst_D(team_4th.D_ref, 0.02, 10)
 	
 	#5
 	print('5th team')
@@ -636,7 +636,7 @@ if __name__ == '__main__':
 	team_5th.calc_all()
 	#team_5th.find_h_1()
 	#team_5th.find_h_2()
-	#team_5th.find_unstst_D(team_4th.D_ref, 0.02, 10)
+	team_5th.find_unstst_D(team_4th.D_ref, 0.02, 10)
 	
 	'''
 	#overal result
@@ -709,8 +709,7 @@ if __name__ == '__main__':
 	team_5th.print_result()
 	team_5th.print_error()
 	team_5th.Unstst_analysis(team_5th.D_exp)
-	'''
-
+	
 	#unsteady state analysis error result comparision
 	
 	#steady state error
@@ -765,8 +764,11 @@ if __name__ == '__main__':
 	print('4th team : {}%'.format(y_list[3]))
 	print('5th team : {}%'.format(y_list[4]))
 	
-	print('Average : {}cm^2/s'.format(np.average(np.array([0.1298, 0.1697, 0.1564, 0.114, 0.1695]))))
-
+	print('Average steady state : {}cm^2/s'.format(np.average(np.array([team_1st.D_exp, team_2nd.D_exp, team_3rd.D_exp, team_4th.D_exp, team_5th.D_exp]))))
+	print('Average unsteady state : {}cm^2/s'.format(np.average(np.array([0.1298, 0.1702, 0.1564, 0.1135, 0.1695]))))
+	'''
+	
+	
 '''	
 reference
 (1). https://webbook.nist.gov/cgi/cbook.cgi?ID=C67641&Mask=4&Type=ANTOINE&Plot=on
