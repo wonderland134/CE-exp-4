@@ -562,8 +562,8 @@ class calc_data():
 		
 		return dev
 	
-	def find_unstst_D(self):
-		D_array = np.linspace(self.D_ref-0.03, self.D_ref+0.03, 30)
+	def find_unstst_D(self,D_guess , diff, n):
+		D_array = np.linspace(D_guess-diff, D_guess+diff, n)
 		dev_array = np.zeros_like(D_array)
 		
 		for i in range(len(D_array)):
@@ -588,7 +588,7 @@ if __name__ == '__main__':
 	team_1st.calc_all()
 	#team_1st.find_h_1()
 	#team_1st.find_h_2()
-	team_1st.find_unstst_D()
+	#team_1st.find_unstst_D(team_1st.D_ref, 0.02, 10)
 	
 
 	#2
@@ -600,7 +600,7 @@ if __name__ == '__main__':
 	team_2nd.calc_all()
 	#team_2nd.find_h_1()
 	#team_2nd.find_h_2()
-	team_2nd.find_unstst_D()
+	#team_2nd.find_unstst_D(team_2nd.D_ref, 0.02, 10)
 	
 	#3
 	print('3rd team')
@@ -612,7 +612,7 @@ if __name__ == '__main__':
 	team_3rd.calc_all()
 	#team_3rd.find_h_1()
 	#team_3rd.find_h_2()
-	team_3rd.find_unstst_D()
+	#team_3rd.find_unstst_D(team_3rd.D_ref, 0.02, 10)
 	
 	#4
 	print('4th team')
@@ -624,7 +624,7 @@ if __name__ == '__main__':
 	team_4th.calc_all()
 	#team_4th.find_h_1()
 	#team_4th.find_h_2()
-	team_4th.find_unstst_D()
+	#team_4th.find_unstst_D(team_4th.D_ref, 0.02, 10)
 	
 	#5
 	print('5th team')
@@ -636,7 +636,7 @@ if __name__ == '__main__':
 	team_5th.calc_all()
 	#team_5th.find_h_1()
 	#team_5th.find_h_2()
-	team_5th.find_unstst_D()
+	#team_5th.find_unstst_D(team_4th.D_ref, 0.02, 10)
 	
 	'''
 	#overal result
@@ -672,7 +672,7 @@ if __name__ == '__main__':
 	team_1st.print_condition()
 	team_1st.print_result()
 	team_1st.print_error()
-	team_1st.Unstst_analysis()
+	team_1st.Unstst_analysis(team_1st.D_exp)
 	
 	print('')
 	print('-------------------------------------')
@@ -681,7 +681,7 @@ if __name__ == '__main__':
 	team_2nd.print_condition()
 	team_2nd.print_result()
 	team_2nd.print_error()
-	team_2nd.Unstst_analysis()
+	team_2nd.Unstst_analysis(team_2nd.D_exp)
 	
 	print('')
 	print('-------------------------------------')
@@ -699,7 +699,7 @@ if __name__ == '__main__':
 	team_4th.print_condition()
 	team_4th.print_result()
 	team_4th.print_error()
-	team_4th.Unstst_analysis()
+	team_4th.Unstst_analysis(team_4th.D_exp)
 	
 	print('')
 	print('-------------------------------------')
@@ -708,10 +708,64 @@ if __name__ == '__main__':
 	team_5th.print_condition()
 	team_5th.print_result()
 	team_5th.print_error()
-	team_5th.Unstst_analysis()
+	team_5th.Unstst_analysis(team_5th.D_exp)
 	'''
-	
 
+	#unsteady state analysis error result comparision
+	
+	#steady state error
+	x_list = np.array([1, 2, 3, 4, 5])
+	name_tag = ['1st team', '2nd team', '3rd team', '4th team', '5th team']
+	y_list = np.array([team_1st.D_exp, team_2nd.D_exp, team_3rd.D_exp, team_4th.D_exp, team_5th.D_exp])
+	ref_list = np.array([team_1st.D_ref, team_2nd.D_ref, team_3rd.D_ref, team_4th.D_ref, team_5th.D_ref])
+	y_list = 100*(y_list - ref_list)/ref_list
+	y_list = np.abs(y_list)
+	
+	plt.close()
+	plt.xticks(x_list, name_tag)
+	plt.bar(x_list, y_list, align = 'center', width = 0.4)
+	plt.xlabel('Type')
+	plt.ylabel('Error(%)')
+	plt.title('Diffusivity error calc by steady state')
+	plt.grid()
+	plt.ylim(0, 50)
+	plt.show()
+	
+	y_list = np.round_(y_list, 2)
+	
+	print('1st team : {}%'.format(y_list[0]))
+	print('2nd team : {}%'.format(y_list[1]))
+	print('3rd team : {}%'.format(y_list[2]))
+	print('4th team : {}%'.format(y_list[3]))
+	print('5th team : {}%'.format(y_list[4]))
+	
+	#unsteady state error
+	x_list = np.array([1, 2, 3, 4, 5])
+	name_tag = ['1st team', '2nd team', '3rd team', '4th team', '5th team']
+	y_list = np.array([0.1298, 0.1697, 0.1564, 0.114, 0.1695])
+	ref_list = np.array([team_1st.D_ref, team_2nd.D_ref, team_3rd.D_ref, team_4th.D_ref, team_5th.D_ref])
+	y_list = 100*(y_list - ref_list)/ref_list
+	y_list = np.abs(y_list)
+	
+	plt.close()
+	plt.xticks(x_list, name_tag)
+	plt.bar(x_list, y_list, align = 'center', width = 0.4)
+	plt.xlabel('Type')
+	plt.ylabel('Error(%)')
+	plt.title('Diffusivity error calc by unsteady state')
+	plt.grid()
+	plt.ylim(0, 50)
+	plt.show()
+	
+	y_list = np.round_(y_list, 2)
+	
+	print('1st team : {}%'.format(y_list[0]))
+	print('2nd team : {}%'.format(y_list[1]))
+	print('3rd team : {}%'.format(y_list[2]))
+	print('4th team : {}%'.format(y_list[3]))
+	print('5th team : {}%'.format(y_list[4]))
+	
+	print('Average : {}cm^2/s'.format(np.average(np.array([0.1298, 0.1697, 0.1564, 0.114, 0.1695]))))
 
 '''	
 reference
