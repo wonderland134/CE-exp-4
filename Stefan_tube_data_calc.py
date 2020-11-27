@@ -446,10 +446,7 @@ class calc_data():
 				P_next[-1] = P_e
 			
 				for j in range(1, len(P_array[i])-1):
-					first = P_bef[j]
-					second = (P_bef[j+1]-2*P_bef[j]+P_bef[j-1])/(P-P_bef[j])
-					third = ((P_bef[j]-P_bef[j-1])/(P-P_bef[j]))**2
-					P_next[j] = first + dt*P*D/dx**2*(second+third) 
+					P_next[j] = P_bef[j] + dt*P*D/dx**2*((P_bef[j+1]-2*P_bef[j]+P_bef[j-1])/(P-P_bef[j])+((P_bef[j]-P_bef[j-1])/(P-P_bef[j]))**2)
 			
 				det = (P_next - P_bef)/(P_bef+(P_s+P_e)/2)
 			
@@ -533,10 +530,7 @@ class calc_data():
 				P_next[-1] = P_e
 			
 				for j in range(1, len(P_array[i])-1):
-					first = P_bef[j]
-					second = (P_bef[j+1]-2*P_bef[j]+P_bef[j-1])/(P-P_bef[j])
-					third = ((P_bef[j]-P_bef[j-1])/(P-P_bef[j]))**2
-					P_next[j] = first + dt*P*D/dx**2*(second+third) 
+					P_next[j] = P_bef[j] + dt*P*D/dx**2*((P_bef[j+1]-2*P_bef[j]+P_bef[j-1])/(P-P_bef[j])+((P_bef[j]-P_bef[j-1])/(P-P_bef[j]))**2)
 			
 				det = (P_next - P_bef)/(P_bef+(P_s+P_e)/2)
 			
@@ -600,7 +594,7 @@ if __name__ == '__main__':
 	team_2nd.calc_all()
 	#team_2nd.find_h_1()
 	#team_2nd.find_h_2()
-	team_2nd.find_unstst_D(team_2nd.D_ref, 0.02, 10)
+	#team_2nd.find_unstst_D(team_2nd.D_ref, 0.02, 10)
 	
 	#3
 	print('3rd team')
@@ -612,7 +606,7 @@ if __name__ == '__main__':
 	team_3rd.calc_all()
 	#team_3rd.find_h_1()
 	#team_3rd.find_h_2()
-	team_3rd.find_unstst_D(team_3rd.D_ref, 0.02, 10)
+	#team_3rd.find_unstst_D(team_3rd.D_ref, 0.02, 10)
 	
 	#4
 	print('4th team')
@@ -624,7 +618,7 @@ if __name__ == '__main__':
 	team_4th.calc_all()
 	#team_4th.find_h_1()
 	#team_4th.find_h_2()
-	team_4th.find_unstst_D(team_4th.D_ref, 0.02, 10)
+	#team_4th.find_unstst_D(team_4th.D_ref, 0.02, 10)
 	
 	#5
 	print('5th team')
@@ -636,7 +630,7 @@ if __name__ == '__main__':
 	team_5th.calc_all()
 	#team_5th.find_h_1()
 	#team_5th.find_h_2()
-	team_5th.find_unstst_D(team_4th.D_ref, 0.02, 10)
+	#team_5th.find_unstst_D(team_4th.D_ref, 0.02, 10)
 	
 	'''
 	#overal result
