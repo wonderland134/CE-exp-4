@@ -72,7 +72,7 @@ class calc_data():
 		d_N = C1_N/C2_N**(1+(1-Tb_N/C3_N)**C4_N) * 0.001		#d in mol/cm^3, T in K
 		
 		C1_O, C2_O, C3_O, C4_O = (3.9143, 0.28772, 154.58, 0.2924)
-		d_O = C1_O/C2_O**(1+(1-Tb_O/C3_N)**C4_N) * 0.001
+		d_O = C1_O/C2_O**(1+(1-Tb_O/C3_O)**C4_O) * 0.001
 		
 		d_air = d_N*0.79 + d_O*0.21
 		
